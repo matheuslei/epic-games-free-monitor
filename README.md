@@ -63,6 +63,9 @@ O workflow já está configurado em `.github/workflows/epic_games_check.yml`.
    - `EMAIL_ADDRESS`: Seu e-mail (remetente).
    - `EMAIL_PASSWORD`: Senha de aplicativo do e-mail.
    - `EMAIL_RECIPIENT`: E-mail que receberá a notificação.
+   - `GH_PAT`: Personal Access Token (Classic) com permissão de `workflow`.
+     - Crie em: **Settings > Developer settings > Personal access tokens > Tokens (classic)**.
+     - Marque o escopo `workflow`.
 
 ## 📦 Estrutura de Arquivos
 

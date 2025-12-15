@@ -1,6 +1,5 @@
 # .env
 __pycache__/
 *.pyc
-last_game.txt
 *.png
 game_screenshot_*.png

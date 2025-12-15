@@ -1,5 +1,5 @@
 from playwright.sync_api import Page
-from dateutil import parser
+from dateutil import parser, tz
 from datetime import timedelta
 from src.services.workflow_service import WorkflowService
 
@@ -35,8 +35,12 @@ class EpicFreeGamesPage:
                 title = card_container.locator('h6').first.inner_text()
                 availability = span.inner_text()
                 
-                # Check for expiration to update schedule
-                self._check_expiration(span)
+                # Check for expiration to update schedule AND fix visual time
+                # Returns the corrected text if successful, or None
+                corrected_text = self._check_expiration(span)
+                
+                if corrected_text:
+                    availability = corrected_text
                 
                 games.append({
                     'title': title,
@@ -61,13 +65,45 @@ class EpicFreeGamesPage:
             time_element = span.locator('time').first
             if time_element.count() > 0:
                 datetime_str = time_element.get_attribute('datetime')
+                print(f"DEBUG - Datetime original do HTML: {datetime_str}")
                 if datetime_str:
                     end_date = parser.isoparse(datetime_str)
+                    
+                    # --- FIX VISUAL TIME FOR SCREENSHOT ---
+                    # Ensure end_date is UTC aware
+                    if end_date.tzinfo is None:
+                        end_date = end_date.replace(tzinfo=tz.tzutc())
+                    
+                    # Convert to Sao Paulo time
+                    to_zone = tz.gettz('America/Sao_Paulo')
+                    brt_date = end_date.astimezone(to_zone)
+                    
+                    months = ["jan.", "fev.", "mar.", "abr.", "mai.", "jun.", "jul.", "ago.", "set.", "out.", "nov.", "dez."]
+                    day = brt_date.day
+                    month = months[brt_date.month - 1]
+                    hour = brt_date.strftime("%H:%M")
+                    
+                    # Construct the visual text dynamically based on the REAL converted time
+                    new_text = f"{day} de {month} às {hour}"
+                    
+                    # Execute JS to update the DOM
+                    # Update the PARENT span to ensure clean text replacement
+                    full_text = f"Grátis - {new_text}"
+                    
+                    span.evaluate(f"el => el.innerText = '{full_text}'")
+                    
+                    print(f"Horário visual corrigido para: {full_text}")
+                    # --------------------------------------
+
                     next_run = end_date + timedelta(minutes=10)
                     print(f"Data de expiração detectada: {end_date}")
                     WorkflowService.update_schedule(next_run)
+                    
+                    return full_text
         except Exception as e:
             print(f"Erro ao calcular próximo agendamento: {e}")
+        
+        return None
 
     def take_screenshot(self, card_element, index):
         filename = f"game_screenshot_{index}.png"
