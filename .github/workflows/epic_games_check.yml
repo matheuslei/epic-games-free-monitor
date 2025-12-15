@@ -4,7 +4,6 @@ on:
   schedule:
     # Daily fallback at 12:00 UTC (09:00 BRT)
     - cron: '0 12 * * *'
-    # Dynamic schedule based on game expiration
     - cron: '10 16 18 12 *' # Dynamic
   workflow_dispatch:
 
