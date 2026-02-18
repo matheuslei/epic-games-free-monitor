@@ -4,7 +4,7 @@ on:
   schedule:
     # Daily fallback at 12:00 UTC (09:00 BRT)
     - cron: '0 12 * * *'
-    - cron: '10 16 12 2 *' # Dynamic
+    - cron: '10 16 19 2 *' # Dynamic
   workflow_dispatch:
 
 jobs:
